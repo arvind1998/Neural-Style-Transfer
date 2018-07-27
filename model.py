@@ -14,7 +14,7 @@ parser=argparse.ArgumentParser(description='Neural Style Transfer')
 parser.add_argument('content_img', metavar='content', type=str, help='Content Image Path')
 parser.add_argument('style_img', metavar='style', type=str, help='Style Image Path')
 parser.add_argument('result_img_name', metavar='res_prefix', type=str, help='Generated Image Path')
-parser.add_argument('--iter', type=int, default=50, required=False, help='Number of Epochs')
+parser.add_argument('--epoch', type=int, default=50, required=False, help='Number of Epochs')
 parser.add_argument('--content_weight', type=float, default=0.025, required=False, help='Content Weight')
 parser.add_argument('--style_weight', type=float, default=1.0, required=False, help='Style Weight')
 parser.add_argument('--height', type=int, default=512, required=False, help='Image Height')
@@ -43,10 +43,16 @@ def preprocessImage(imagePath):
     image=Image.open(imagePath) # Opening the image 
     image=image.resize((imageWidth, imageHeight)) # Resizing the image
     imageArray=np.asarray(image, dtype='float32') # Converting the image to an array
-    imageArray=np.expand_dims(imageArray, axis=0) # Adding an extra column 
+    imageArray=np.expand_dims(imageArray, axis=0) # Adding an extra column
+    '''
+    first column
+    0 content
+    1 style
+    2 generated
+    '''
     imageArray=imageArray[:, :, :, :3] # Taking R,G,B
     imageArray=imageArray[:, :, :, ::-1] # Converting RGB to BGR
-    imageArray[:, :, :, 0]-=103.939 # Normalizing it
+    imageArray[:, :, :, 0]-=103.939 # Mean shifting
     imageArray[:, :, :, 1]-=116.779
     imageArray[:, :, :, 2]-=123.68
     return imageArray
@@ -107,13 +113,13 @@ def total_loss(c_layers, s_layers, generated):
     return content_weight*c_loss + style_weight*s_loss 
 
 
-def eval_loss_and_grads(generated):
+def loss_and_gradient(generatedImageArray):
     
-    generated=generated.reshape((1, imageHeight, imageWidth, 3)) # Reshape
-    output=finalOutput([generated])
+    generatedImageArray=generatedImageArray.reshape((1, imageHeight, imageWidth, 3)) # Reshape
+    output=finalOutput([generatedImageArray])
     loss_value=output[0]
-    grad_values=output[1].flatten().astype('float64')
-    return loss_value, grad_values
+    gradient_values=output[1].flatten().astype('float64')
+    return loss_value, gradient_values
 
 
 def save_image(filename, generatedImage):
@@ -134,19 +140,26 @@ class Evaluator(object):
     
     def __init__(self): # Constructor
         self.loss_value=0
-        self.grad_values=0
+        self.gradient_values=0
 
     def loss(self, x):
-        loss_value, grad_values=eval_loss_and_grads(x)
+        loss_value, gradient_values=loss_and_gradient(x)
         self.loss_value=loss_value
-        self.grad_values=grad_values
+        self.grad_values=gradient_values
         return self.loss_value
 
     def grads(self, x):
-        grad_values=np.copy(self.grad_values)
+        gradient_values=np.copy(self.gradient_values)
+        
+        '''
+        if we use gradient_values=self.gradient_values,
+        then any changes made to self.gradient_values will also effect gradient_values.
+        gradient_values=np.copy(self.gradient_values) allocates a separate memory location and names it gradient_values.
+        '''
+        
         self.loss_value=0
-        self.grad_values=0
-        return grad_values
+        self.gradient_values=0
+        return gradient_values
 
 
 if __name__ == '__main__':
@@ -168,22 +181,18 @@ if __name__ == '__main__':
     loss=total_loss(content_layers, style_layers, generatedImage) # Computing total loss
     grads=K.gradients(loss, generatedImage) # Computing the gradient
 
-    outputs=[loss] # Loss list
-    outputs+=grads # Adding the gradient tensor to the loss
-    finalOutput=K.function([generatedImage], outputs) # Function name is f_outputs with parameter as generatedImage 
+    output=[loss] # Loss list
+    output+=grads # Adding the gradient tensor to the loss
+    finalOutput=K.function([generatedImage], output) # Function name is finalOutput with parameter as generatedImage 
 
     evaluator=Evaluator() 
-    iterations=args.iter # Storing number of iterations
+    epochs=args.epoch # Storing number of epochs
 
     
 
-    for i in range(iterations):
-        print('Iteration:', i)
-        start_time=time.time()
-        #generated_image, min_val, _ = fmin_l_bfgs_b(evaluator.loss, generated_image.flatten(), fprime=evaluator.grads, maxfun=20)
+    for i in range(epochs):
+        print('Epoch:', i)
         generated_image, min_val, _ = fmin_l_bfgs_b(evaluator.loss, generated_image, fprime=evaluator.grads, maxfun=20)
-        end_time=time.time()
         print('Loss:', min_val)
-        print('Iteration {} took {} seconds'.format(i, end_time - start_time))
         name='{}-{}{}'.format(target_name, i+1, target_extension)
         save_image(name, generated_image)
