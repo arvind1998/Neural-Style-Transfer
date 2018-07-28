@@ -1,7 +1,6 @@
 # Importing the Libraries
 import numpy as np
 import argparse
-import time
 from PIL import Image
 from scipy.optimize import fmin_l_bfgs_b
 from scipy.misc import imsave
