@@ -80,7 +80,7 @@ As I executed it on a CPU, the process was slow. So I stopped it after around 25
 python model.py content.png style.png result --epoch 100 --content_weight 0.45 --style weight 1.85
 
 
-References:
-1. https://arxiv.org/abs/1508.06576
-2. https://medium.com/artists-and-machine-intelligence/neural-artistic-style-transfer-a-comprehensive-look-f54d8649c199
-3. https://blog.slavv.com/picking-an-optimizer-for-style-transfer-86e7b8cba84b
+**References**:
+1. https://arxiv.org/abs/1508.06576 (Original Paper on Style Transfer)
+2. https://medium.com/artists-and-machine-intelligence/neural-artistic-style-transfer-a-comprehensive-look-f54d8649c199 (Informative article on style transfer)
+3. https://blog.slavv.com/picking-an-optimizer-for-style-transfer-86e7b8cba84b (Which optimizer to use to minimize loss function?)
