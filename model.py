@@ -11,9 +11,9 @@ from keras.applications import VGG16
 
 # Command Line Arguments
 parser=argparse.ArgumentParser(description='Neural Style Transfer')
-parser.add_argument('content_img', metavar='content', type=str, help='Content Image Path')
-parser.add_argument('style_img', metavar='style', type=str, help='Style Image Path')
-parser.add_argument('result_img_name', metavar='res_prefix', type=str, help='Generated Image Path')
+parser.add_argument('content_img', type=str, help='Content Image Path')
+parser.add_argument('style_img', type=str, help='Style Image Path')
+parser.add_argument('result_img_name', type=str, help='Generated Image Path')
 parser.add_argument('--epoch', type=int, default=50, required=False, help='Number of Epochs')
 parser.add_argument('--content_weight', type=float, default=0.4, required=False, help='Content Weight')
 parser.add_argument('--style_weight', type=float, default=1.2, required=False, help='Style Weight')
