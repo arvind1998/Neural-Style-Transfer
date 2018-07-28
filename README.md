@@ -56,9 +56,11 @@ beta - style weight
 
 Content Image - 
 
+![](content.png)
 
 Style Image - 
 
+![](style.png)
 
 
 If content weight is more than style weight - 
