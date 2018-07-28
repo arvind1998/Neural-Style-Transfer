@@ -8,7 +8,7 @@ We basically have to find the loss in the feature maps of the content image and 
 
 <h2> Working of the model - </h2>
 We will be using a VGG-16 architecture pre-trained with "ImageNet" weights. 
-In a Convolutional Neural Network more the deeper we go, more number of features are extracted. This means the image starts becoming definite (the main subject is extracted). So in order to find the content loss, we need feature maps of the deeper layers .i.e. the hidden layers close to the output. According to the original paper, 
+In a Convolutional Neural Network the more deeper we go, more number of features are extracted. This means the image starts becoming definite (the main subject is extracted). So in order to find the content loss, we need feature maps of the deeper layers .i.e. the hidden layers close to the output. According to the original paper, 
 
 
 ![](/images/contentloss.png)
